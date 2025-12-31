@@ -18,6 +18,7 @@ This Streamlit application processes DHIS2 self-care CSV files and produces a cl
 
 ## How to use the app
 1. Open the app link in your browser
+    https://selfcare.streamlit.app/
 2. Upload the DHIS2 CSV file
 3. Wait for processing to finish
 4. Download the processed file

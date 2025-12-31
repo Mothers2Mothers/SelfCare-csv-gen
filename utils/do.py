@@ -2,9 +2,6 @@ import streamlit as st
 import pandas as pd
 import io
 
-# path = r"C:\Users\Siphiwe Themba\Desktop\code\files\2025 Self-Care Outputs (Q2).xlsx"
-# path2 = r"C:\Users\Siphiwe Themba\Desktop\code\files\DHIS2 events (Q3).csv"
-
 def run_pipeline(path2, curr, path=None):
 
     # sco = pd.read_excel(path)  # self care outputs  -  the one we must match
