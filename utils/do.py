@@ -1,4 +1,3 @@
-import datetime
 import streamlit as st
 import pandas as pd
 import io
@@ -6,9 +5,7 @@ import io
 # path = r"C:\Users\Siphiwe Themba\Desktop\code\files\2025 Self-Care Outputs (Q2).xlsx"
 # path2 = r"C:\Users\Siphiwe Themba\Desktop\code\files\DHIS2 events (Q3).csv"
 
-curr = datetime.datetime.now()
-
-def run_pipeline(path2, path=None):
+def run_pipeline(path2, curr, path=None):
 
     # sco = pd.read_excel(path)  # self care outputs  -  the one we must match
     de = pd.read_csv(path2)  # dhis2 events
