@@ -145,7 +145,7 @@ def run_pipeline(path2, curr, path=None):
         'Organisation unit code', 'Program status', 'Event status',
         'Organisation unit'])
 
-    output = io.StringIO()  # StringIO creates an in-memory file object
+    output = io.BytesIO()  # BytesIO creates an in-memory binary file object
     df_rec.to_csv(output, index=False)
     output.seek(0)
 
