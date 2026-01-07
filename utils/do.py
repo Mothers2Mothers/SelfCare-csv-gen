@@ -24,10 +24,12 @@ def run_pipeline(path2, curr, path=None):
 
 
     # ## Actions
-    # - group cols to domains (physical, emotional, spiritual, professional, personal/social, financial, and psychological)
-    # - assign scores: 1: Never, 2: Rarely, 3: Sometimes, 4: Often, 5: All the time
-    # - agg avg per domain
+    # 1 group cols to domains (physical, emotional, spiritual, professional, personal/social, financial, and psychological)
+    # 2 assign scores: 1: Never, 2: Rarely, 3: Sometimes, 4: Often, 5: All the time
+    # 3 agg avg per domain
+    # 4 filter on date
 
+    # 1
     df = de.rename(columns={'DSC  28   Access psychotherapy':'PSYCHOLOGICAL_Access_psychotherapy',
                             'DSC 13  Maintain work-life balance':'PROFESSIONAL_Maintain_work-life_balance', 
                             'DSC 10  Meditate':'SPIRITUAL_Meditate',
@@ -59,7 +61,7 @@ def run_pipeline(path2, curr, path=None):
                             'DSC  28  Life coaching or counselling support.':'PSYCHOLOGICAL_Life_coaching_or_counselling_support',
                             'DSC 14   Positive relationships with co-workers':'PROFESSIONAL_Positive_relationships_with_co-workers'})
 
-    df['EMOTIONAL_Medical_check-ups'] = df['PHYSICAL_Medical_check-ups']
+    df['EMOTIONAL_Medical_check-ups'] = df['PHYSICAL_Medical_check-ups']  # same answer
     df['Person'] = de[['First Name', 'Surname']].fillna('').agg(' '.join, axis=1).str.strip()
 
     cols = ['PHYSICAL_Eat_regular_and_healthy_meals', 'PHYSICAL_Good_sleep_habits',
@@ -86,7 +88,8 @@ def run_pipeline(path2, curr, path=None):
         'PSYCHOLOGICAL_Life_coaching_or_counselling_support',
         'PSYCHOLOGICAL_Disconnect_from_electrical_devices',
         'PSYCHOLOGICAL_Journal']
-
+    
+    # 2
     mapping = {r'^\s*never\s*$': 1, r'^\s*not\s*at\s*all\s*$': 1,
             r'^\s*rarely\s*$': 2,
             r'^\s*sometimes\s*$': 3,
@@ -105,7 +108,11 @@ def run_pipeline(path2, curr, path=None):
 
     st.write(df.info())
 
-    qrtrs = ['2026-01-01', '2026-04-01', '2026-07-01', '2026-10-01']
+    # 4
+    year = curr.strftime("%y")
+
+    qrtrs = [f'20{year}-01-01', f'20{year}-04-01', f'20{year}-07-01', f'20{year}-10-01']
+    months = ['Jan', 'Apr', 'Jul', 'Oct']
 
     current_month = curr.month
 
@@ -118,24 +125,18 @@ def run_pipeline(path2, curr, path=None):
     df_rec = df[df['Last updated on']>=q]
     st.write("Length of filtered df:\t", len(df_rec))
 
-    ## done
-    # - add the domain prefixes
-    # - cols 'EMOTIONAL_Medical_check-ups' and 'PHYSICAL_Medical_check-ups' have same answer
-    # - col 'Person' = 'First Name' + 'Surname'
-    # - encode the numeric cols
-    # - filter on date
-
-    domains = ["physical", "emotional", "spiritual", "professional", "personal", "financial", "psychological"]
+    # 3
+    domains = ["Physical", "Emotional", "Spiritual", "Professional", "Personal", "Financial", "Psychological"]
 
     for dom in domains:
-        group = [col for col in df_rec.columns if dom in col.lower()]
+        group = [col for col in df_rec.columns if dom.lower() in col.lower()]
 
         if group:
             df_rec[dom] = df_rec[group].sum(axis=1)
+    
+    df_rec["Total Score"] = df_rec[domains].sum(axis=1)
 
-    st.write(df_rec.head())
-
-    df_rec['Month'] = 'Oct-25'
+    df_rec['Month'] = f'{months[quarter_index]}-{year}'  # like Oct-25
 
     df_rec = df_rec.drop(columns=['Event', 'Program stage', 'Event date', 'Stored by', 'Created by',
         'Last updated by', 'Last updated on', 'Scheduled date',
@@ -144,6 +145,13 @@ def run_pipeline(path2, curr, path=None):
         'Organisation unit name', 'Organisation unit name hierarchy',
         'Organisation unit code', 'Program status', 'Event status',
         'Organisation unit'])
+    
+    order = ["Person", "Month",*domains, "Total Score"]
+    df_rec = df_rec[order + [c for c in df_rec.columns if c not in order]]
+    
+    st.write(df_rec.head())
+
+    # df_rec = 
 
     output = io.BytesIO()  # BytesIO creates an in-memory binary file object
     df_rec.to_csv(output, index=False)
